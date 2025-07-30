@@ -1,18 +1,11 @@
 # 🧑‍🍳푸드 소믈리에
-<br>
 
-## 소개
-
----
-
-### AI를 활용한 위치 기반 음식점 추천 애플리케이션입니다.
+AI를 활용한 위치 기반 음식점 추천 애플리케이션입니다.
 
 <br>
 
 
 ## Team : 조코위코(JocoWeco)
-
----
 
 ### Design : `문소영`
 ### Front-end : `최혜빈`
@@ -22,8 +15,6 @@
 
 
 ## Tech Stacks
-
----
 
 ### Front-end
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
@@ -46,8 +37,6 @@
 
 ## 주요 기능
 
----
-
 - ### 
 
 - ### 
@@ -58,5 +47,3 @@
 
 
 ## 화면 구성
-
---- 
