@@ -2,6 +2,7 @@ package com.jocoweco.FoodSommelier;
 
 import com.jocoweco.FoodSommelier.domain.User;
 import com.jocoweco.FoodSommelier.dto.UserRequestDto;
+import com.jocoweco.FoodSommelier.repository.UserRepository;
 import com.jocoweco.FoodSommelier.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ public class UserServiceTest {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     public void setUp() {
@@ -24,6 +27,8 @@ public class UserServiceTest {
                 "1234",
                 "bbq",
                 "kyo");
+
+        userRepository.save(user);
     }
 
     @Test
@@ -35,8 +40,11 @@ public class UserServiceTest {
         req.setUser_pw("12341");
         req.setRecently_store("");
         req.setSaved_store("");
-
+        User before = userRepository.findById(1L).get();
+        System.out.println(before.toString());
         userService.updateUser(req);
+        User after = userRepository.findById(1L).get();
+        System.out.println(after.toString());
     }
 
 }

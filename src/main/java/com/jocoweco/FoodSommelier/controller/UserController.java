@@ -1,12 +1,13 @@
 package com.jocoweco.FoodSommelier.controller;
 
-import com.jocoweco.FoodSommelier.service.UserService;
 import com.jocoweco.FoodSommelier.dto.UserRequestDto;
 import com.jocoweco.FoodSommelier.dto.UserResponseDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jocoweco.FoodSommelier.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping ("/user")
