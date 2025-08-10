@@ -1,5 +1,6 @@
 package com.jocoweco.FoodSommelier.dto;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -7,14 +8,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRequestDto {
-    @NonNull
+    @Column(nullable = false)
     private Long uid;
-    @NonNull
+    @Column(nullable = false)
     private String userId;
-    @NonNull
+    @Column(nullable = false)
     private String nickName;
-    @NonNull
+    @Column(nullable = false)
     private String user_pw;
-    private String recently_store;
-    private String saved_store;
+    private String recentlyStore;
+    private String savedStore;
 }

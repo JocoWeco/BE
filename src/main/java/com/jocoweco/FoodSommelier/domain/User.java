@@ -22,16 +22,15 @@ public class User {
     @Column(nullable = false)
     private String user_pw;
     @Column(nullable = true)
-    private String recently_store;
-    @Column(nullable = true)
-    private String saved_store;
+    private String recentlyStore;
+    @Column(name = "saved_store", nullable = true)
+    private String savedStore;
 
-    public void updateUser(String userId, String nickName, String user_pw, String recently_store, String saved_store) {
-        if (userId != null) this.userId = userId;
-        if (nickName != null) this.nickName = nickName;
-        if (user_pw != null) this.user_pw = user_pw;
-        this.recently_store = recently_store;
-        this.saved_store = saved_store;
+    public void updateUser(String userId, String nickName, String user_pw, String savedStore) {
+        this.userId = userId;
+        this.nickName = nickName;
+        this.user_pw = user_pw;
+        this.savedStore = savedStore;
     }
 
 }

@@ -12,8 +12,8 @@ public class UserResponseDto {
     private String userId;
     @NonNull
     private String nickName;
-    private String recently_store;
-    private String saved_store;
+    private String recentlyStore;
+    private String savedStore;
 
 
     // 엔티티 -> dto 변환 메서드
@@ -21,8 +21,8 @@ public class UserResponseDto {
         return new UserResponseDto(
                 user.getUserId(),
                 user.getNickName(),
-                user.getRecently_store(),
-                user.getSaved_store()
+                user.getRecentlyStore(),
+                user.getSavedStore()
         );
     }
 }
