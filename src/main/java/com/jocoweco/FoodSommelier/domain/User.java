@@ -21,16 +21,11 @@ public class User {
     private String nickName;
     @Column(nullable = false)
     private String user_pw;
-    @Column(nullable = true)
-    private String recentlyStore;
-    @Column(name = "saved_store", nullable = true)
-    private String savedStore;
 
-    public void updateUser(String userId, String nickName, String user_pw, String savedStore) {
+    public void updateUser(String userId, String nickName, String user_pw) {
         this.userId = userId;
         this.nickName = nickName;
         this.user_pw = user_pw;
-        this.savedStore = savedStore;
     }
 
 }

@@ -1,7 +1,6 @@
 package com.jocoweco.FoodSommelier.controller;
 
 import com.jocoweco.FoodSommelier.dto.UserRequestDto;
-import com.jocoweco.FoodSommelier.dto.UserResponseDto;
 import com.jocoweco.FoodSommelier.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,8 +19,13 @@ public class UserController {
 
     // 유저 정보 수정
     @PatchMapping("/update")
-    public ResponseEntity<UserResponseDto> updateUser(@RequestBody UserRequestDto userReq) {
-        UserResponseDto userResponseDto = userService.updateUser(userReq);
-        return ResponseEntity.ok(userResponseDto);
+    public ResponseEntity<Void> updateUser(@RequestBody UserRequestDto userReq) {
+        userService.updateUser(userReq);
+        return ResponseEntity.ok().build();
     }
+
+//    @GetMapping("/selectStore")
+//    public ResponseEntity<StoreResponseDto> selectStore(@RequestBody storeRequestDto userReq) {
+//
+//    }
 }
