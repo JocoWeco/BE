@@ -5,3 +5,10 @@ spring:
 
   config:
     import: optional:.env[.properties]
+
+  datasource:
+    #mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_ID}
+    password: ${MYSQL_PASSWORD}
