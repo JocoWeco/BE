@@ -6,7 +6,11 @@ package com.jocoweco.FoodSommelier.security.jwt;
 
 import com.jocoweco.FoodSommelier.auth.dto.TokenResponseDTO;
 import com.jocoweco.FoodSommelier.security.userdetails.CustomUserDetails;
+import com.jocoweco.FoodSommelier.user.domain.LocalUser;
+import com.jocoweco.FoodSommelier.user.domain.SocialUser;
 import com.jocoweco.FoodSommelier.user.domain.User;
+import com.jocoweco.FoodSommelier.user.repository.LocalUserRepository;
+import com.jocoweco.FoodSommelier.user.repository.SocialUserRepository;
 import com.jocoweco.FoodSommelier.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -36,21 +40,27 @@ public class JwtProvider {
 
     private final SecretKey key;
     private final UserRepository userRepository;
+    private final LocalUserRepository localUserRepository;
+    private final SocialUserRepository socialUserRepository;
 
 
-    public JwtProvider(@Value("${jwt.secret.key}") String secretKey, UserRepository userRepository) {
+    public JwtProvider(@Value("${jwt.secret.key}") String secretKey, UserRepository userRepository, LocalUserRepository localUserRepository, SocialUserRepository socialUserRepository) {
         this.userRepository = userRepository;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.localUserRepository = localUserRepository;
+        this.socialUserRepository = socialUserRepository;
     }
 
     /* 토큰 생성 */
     public TokenResponseDTO generateToken(Authentication authentication) {
+
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        // 만료일 설정
         long now = (new Date()).getTime();
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
@@ -58,7 +68,7 @@ public class JwtProvider {
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .claim(AUTHORITIES_KEY, authorities) // 권한
-                .subject(authentication.getName()) // 사용자
+                .subject(authentication.getName()) // 사용자 uuid
                 .expiration(accessTokenExpiresIn) // 만료일
                 .signWith(this.key)
                 .compact();
@@ -66,13 +76,13 @@ public class JwtProvider {
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
                 .claim(AUTHORITIES_KEY, authorities) // 권한
-                .subject(authentication.getName()) // 사용자
+                .subject(authentication.getName()) // 사용자 uuid
                 .expiration(refreshTokenExpiresIn) // 만료일
                 .signWith(this.key)
                 .compact();
 
         return TokenResponseDTO.builder()
-                .userId(authentication.getName())
+                .uuid(authentication.getName())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -91,16 +101,37 @@ public class JwtProvider {
         }
 
         // DB 정보 확인
-        String userId = claims.getSubject();
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("UserId Not Found : " + userId));
+        String uuidString = claims.getSubject();
 
-        UserDetails principal = new CustomUserDetails(user);
+        User user = userRepository.findByUuid(uuidString)
+                .orElseThrow(() -> new UsernameNotFoundException("유저 정보를 찾을 수 없습니다."));
+
+        String username;
+        String password;
+
+        switch (user.getLoginType()) {
+            case LOCAL -> {
+                LocalUser localUser = localUserRepository.findByUser(user)
+                        .orElseThrow(() -> new UsernameNotFoundException("Local 사용자 정보를 찾을 수 없습니다."));
+                username = localUser.getLocalId();
+                password = localUser.getPassword();
+            }
+            case GOOGLE -> {
+                SocialUser socialUser = socialUserRepository.findByUser(user)
+                        .orElseThrow(() -> new UsernameNotFoundException("Social 사용자 정보를 찾을 수 없습니다."));
+                username = socialUser.getProviderId();
+                password = null;
+            }
+            default -> throw new UsernameNotFoundException("지원되지 않는 로그인 유형입니다.");
+        }
+
+        UserDetails principal = CustomUserDetails.fromUser(user, username, password);
+
         return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
     }
 
     /* 토큰 사용자 조회 */
-    public String getUserId(String accessToken) {
+    public String getUuid(String accessToken) {
         try {
             Claims claims = parseClaims(accessToken);
             return claims.getSubject();

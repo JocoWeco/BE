@@ -4,6 +4,7 @@ import com.jocoweco.FoodSommelier.security.jwt.JwtAccessDeniedHandler;
 import com.jocoweco.FoodSommelier.security.jwt.JwtAuthenticationEntryPoint;
 import com.jocoweco.FoodSommelier.security.jwt.JwtFilter;
 import com.jocoweco.FoodSommelier.security.jwt.JwtProvider;
+import com.jocoweco.FoodSommelier.security.userdetails.CustomUserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -34,13 +34,16 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomUserDetailService customUserDetailService) throws Exception {
         http
                 // csrf 설정 : disable
                 .csrf(AbstractHttpConfigurer::disable)
 
                 // Http Basic 인증 : disable
                 .httpBasic(AbstractHttpConfigurer::disable)
+
+                // Form 로그인 : disable
+                .formLogin(AbstractHttpConfigurer::disable)
 
                 // 세션 설정
                 .sessionManagement((session) -> session
@@ -51,18 +54,15 @@ public class WebSecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 예외
                         .accessDeniedHandler(jwtAccessDeniedHandler)) // 인가 예외
 
-                // Form 로그인 : disable
-                .formLogin(AbstractHttpConfigurer::disable)
-
                 /* 경로별 인가 작업 */
                 // 회원가입, 로그인 API는 토큰 없는 상태에서 요청 들어옴
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
 
                 // JwtProvider, JwtFilter 적용
                 .addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
-
+                .userDetailsService(customUserDetailService)
                 .cors(Customizer.withDefaults());
 
         return http.build();

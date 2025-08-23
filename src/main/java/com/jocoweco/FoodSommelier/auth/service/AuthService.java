@@ -2,18 +2,20 @@ package com.jocoweco.FoodSommelier.auth.service;
 
 import com.jocoweco.FoodSommelier.auth.domain.RefreshToken;
 import com.jocoweco.FoodSommelier.auth.dto.LoginRequestDTO;
-import com.jocoweco.FoodSommelier.auth.dto.RegisterRequestDTO;
+import com.jocoweco.FoodSommelier.auth.dto.RegisterLocalRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.TokenRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.TokenResponseDTO;
 import com.jocoweco.FoodSommelier.auth.repository.RefreshTokenRepository;
+import com.jocoweco.FoodSommelier.constant.LoginType;
 import com.jocoweco.FoodSommelier.constant.Role;
 import com.jocoweco.FoodSommelier.security.jwt.JwtProvider;
+import com.jocoweco.FoodSommelier.security.userdetails.CustomUserDetails;
+import com.jocoweco.FoodSommelier.user.domain.LocalUser;
 import com.jocoweco.FoodSommelier.user.domain.User;
+import com.jocoweco.FoodSommelier.user.repository.LocalUserRepository;
 import com.jocoweco.FoodSommelier.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -23,12 +25,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final LocalUserRepository localUserRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -36,42 +41,80 @@ public class AuthService {
 
     /* 회원가입 */
     @Transactional
-    public String createUser(RegisterRequestDTO request) {
-        if (userRepository.existsByUserId(request.getUserId())) {
-            throw new RuntimeException("이미 가입된 아이디입니다.");
+    public String createUser(RegisterLocalRequestDTO request) {
+
+        // 아이디 사용 가능 확인
+        if (!request.isEnabledNickname())
+            throw new IllegalArgumentException("사용 불가능한 아이디입니다.");
+
+        // 사용한 메일인지 확인
+        if (!request.isEnabledEmail()) {
+            throw new IllegalArgumentException("이미 가입한 메일입니다..");
         }
-        if (userRepository.existsByNickname(request.getNickname())) {
-            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
-        }
+
+        // 닉네임 사용 가능 확인
+        if (!request.isEnabledLoginId())
+            throw new IllegalArgumentException("사용 불가능한 닉네임입니다.");
 
         User user = User.builder()
-                .userId(request.getUserId())
-                .userPw(passwordEncoder.encode(request.getUserPw()))
+                .uuid(generateUuid())
+                .loginType(LoginType.LOCAL)
                 .nickname(request.getNickname())
+                .email(request.getEmail())
+                .gender(request.getGender())
                 .role(Role.USER)
+                .isActive(true)
                 .build();
-
         userRepository.save(user);
 
-        return user.getUserId();
+        LocalUser localUser = LocalUser.builder()
+                .localId(request.getLoginId())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .user(user)
+                .build();
+        localUserRepository.save(localUser);
+
+        return user.getNickname();
+    }
+
+    // UUID 생성
+    public String generateUuid() {
+        return UUID.randomUUID().toString();
+    }
+
+    // 동일 아이디 여부 확인
+    public boolean isDuplicatedId(String loginId) {
+        return localUserRepository.existsByLocalId(loginId);
+    }
+
+    // 동일 닉네임 여부 확인
+    public boolean isDuplicatedNickname(String nickname) {
+        return userRepository.existsByNickname(nickname);
+    }
+    // 동일 이메일 여부 확인
+    public boolean isDuplicatedEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     /* 로그인 */
     @Transactional
     public TokenResponseDTO login(LoginRequestDTO request) {
+
         // AuthenticationToken 생성
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getUserId(), request.getUserPw());
-        // 검증
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getLoginId(), request.getPassword());
+
+        // 인증
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        // 사용자 정보 확인
-        User user = userRepository.findByUserId(request.getUserId())
-                .orElseThrow(() -> new UsernameNotFoundException("UserId Not Found : " + request.getUserId()));
 
         // JWT 토큰 생성
         TokenResponseDTO token = jwtProvider.generateToken(authentication);
 
+        // 인증된 유저 UUID 추출
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String uuid = userDetails.getUuid();
+
         // Redis에 refreshToken 저장
-        refreshTokenRepository.save(new RefreshToken(user.getUserId(), token.getRefreshToken()));
+        refreshTokenRepository.save(new RefreshToken(uuid, token.getRefreshToken()));
 
         return token;
     }
@@ -81,14 +124,15 @@ public class AuthService {
     public TokenResponseDTO reissueToken(TokenRequestDTO request) {
         String refreshToken = request.getRefreshToken();
 
-        String userId = jwtProvider.getUserId(refreshToken);
+        String uuid = jwtProvider.getUuid(refreshToken);
 
         // Redis에 RefreshToken 저장되어 있는지 확인
-        RefreshToken foundTokenInfo = refreshTokenRepository.findById(userId)
+        RefreshToken foundTokenInfo = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("RefreshToken Not Found"));
+       
         // 사용자 정보 확인
-        User user = userRepository.findByUserId(foundTokenInfo.getUserId())
-                .orElseThrow(() -> new RuntimeException("UserId Not Found : " + foundTokenInfo.getUserId()));
+        User user = userRepository.findByUuid(foundTokenInfo.getUuid())
+                .orElseThrow(() -> new RuntimeException("UserId Not Found : " + foundTokenInfo.getUuid()));
         // 유효성 검사
         jwtProvider.validateToken(refreshToken);
 
@@ -97,9 +141,9 @@ public class AuthService {
         // 새로운 JWT 토큰 생성
         TokenResponseDTO newToken = jwtProvider.generateToken(authentication);
         // Redis에 저장된 이전 토큰 제거
-        refreshTokenRepository.deleteByUserId(user.getUserId());
+        refreshTokenRepository.deleteByUserId(user.getUuid());
         // Redis에 refreshToken 저장
-        refreshTokenRepository.save(new RefreshToken(user.getUserId(), newToken.getRefreshToken()));
+        refreshTokenRepository.save(new RefreshToken(user.getUuid(), newToken.getRefreshToken()));
 
         return newToken;
     }
@@ -113,9 +157,9 @@ public class AuthService {
         }
         String token = accessToken.substring("Bearer ".length());
 
-        String userId = jwtProvider.getUserId(token);
+        String userId = jwtProvider.getUuid(token);
         if (userId == null) {
-            throw new UsernameNotFoundException("UserId not found");
+            throw new UsernameNotFoundException("회원 정보를 찾을 수 없습니다.");
         }
 
         // Redis에서 refreshToken 삭제

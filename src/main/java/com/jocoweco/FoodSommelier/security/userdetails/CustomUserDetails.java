@@ -1,5 +1,7 @@
 package com.jocoweco.FoodSommelier.security.userdetails;
 
+import com.jocoweco.FoodSommelier.constant.LoginType;
+import com.jocoweco.FoodSommelier.constant.Role;
 import com.jocoweco.FoodSommelier.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,30 +10,46 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
 @Builder
-public class CustomUserDetails implements UserDetails, Serializable {
+@AllArgsConstructor
+public class CustomUserDetails implements UserDetails {
 
-    private final User user;
+    private final String uuid;
+    private final String username;
+    private final String password;
+    private final Role role;
+    private final LoginType loginType;
+    private final Boolean isActive;
+
+
+    public static CustomUserDetails fromUser(User user, String username, String password) {
+        return new CustomUserDetails(
+                user.getUuid(),
+                username,
+                password,
+                user.getRole(),
+                user.getLoginType(),
+                user.isActive()
+        );
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
     public String getPassword() {
-        return user.getUserPw();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getUserId();
+        return uuid.toString();
     }
 
     // 계정 만료 여부
@@ -46,7 +64,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
         return true;
     }
 
-    // 비밀번호 반료 여부
+    // 비밀번호 만료 여부
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
@@ -55,6 +73,6 @@ public class CustomUserDetails implements UserDetails, Serializable {
     // 계정 사용 여부
     @Override
     public boolean isEnabled() {
-        return true;
+        return isActive;
     }
 }
