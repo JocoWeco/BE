@@ -42,20 +42,6 @@ public class AuthService {
     /* 회원가입 */
     @Transactional
     public String createUser(RegisterLocalRequestDTO request) {
-
-        // 아이디 사용 가능 확인
-        if (!request.isEnabledNickname())
-            throw new IllegalArgumentException("사용 불가능한 아이디입니다.");
-
-        // 사용한 메일인지 확인
-        if (!request.isEnabledEmail()) {
-            throw new IllegalArgumentException("이미 가입한 메일입니다..");
-        }
-
-        // 닉네임 사용 가능 확인
-        if (!request.isEnabledLoginId())
-            throw new IllegalArgumentException("사용 불가능한 닉네임입니다.");
-
         User user = User.builder()
                 .uuid(generateUuid())
                 .loginType(LoginType.LOCAL)

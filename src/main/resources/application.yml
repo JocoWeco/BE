@@ -29,21 +29,6 @@ spring:
       host: localhost
       port: 6379
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_ID}
-            client-secret: ${GOOGLE_SECRET}
-            scope:
-              - email
-              - profile
-  mvc:
-    cors:
-      allowed-origins: http://localhost:3000,${ANDROID_DEVICE_IP}
-      allowed-methods: GET,POST,PUT,DELETE
-
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}
@@ -51,6 +36,3 @@ jwt:
 google:
   client:
     client-id: ${Google_Client_Id}
-    client-secret:
-    access-token-uri:
-    user-authorization-uri:

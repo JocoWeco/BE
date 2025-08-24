@@ -7,6 +7,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 import com.jocoweco.FoodSommelier.auth.domain.RefreshToken;
+import com.jocoweco.FoodSommelier.auth.dto.GoogleIdTokenRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.GoogleUserInfo;
 import com.jocoweco.FoodSommelier.auth.dto.RegisterSocialRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.TokenResponseDTO;
@@ -50,7 +51,9 @@ public class GoogleAuthService {
     private String googleClientId;
 
     /* 구글 로그인 */
-    public TokenResponseDTO googleLogin(String idToken) throws GeneralSecurityException {
+    public TokenResponseDTO googleLogin(GoogleIdTokenRequestDTO request) throws GeneralSecurityException {
+
+        String idToken = request.getGoogleIdToken();
 
         // Google 토큰 검증
         GoogleUserInfo googleUserInfo = verifyIdToken(idToken);
@@ -64,7 +67,7 @@ public class GoogleAuthService {
 
         // 유저 정보 있는 경우
         SocialUser socialUser = socialUserOpt.get();
-        CustomUserDetails userDetails = CustomUserDetails.fromUser(socialUser.getUser(),socialUser.getProviderId(),null);
+        CustomUserDetails userDetails = CustomUserDetails.fromUser(socialUser.getUser(), socialUser.getProviderId(), null);
 
         // 인증
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -80,11 +83,6 @@ public class GoogleAuthService {
 
     /* 구글 회원가입 */
     public TokenResponseDTO googleRegister(RegisterSocialRequestDTO request) {
-
-        if (!request.isEnabledNickname()) {
-            throw new IllegalArgumentException("사용 불가능한 닉네임입니다.");
-        }
-
         User user = User.builder()
                 .uuid(generateUuid())
                 .loginType(LoginType.GOOGLE)

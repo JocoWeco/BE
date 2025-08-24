@@ -1,5 +1,7 @@
 package com.jocoweco.FoodSommelier.auth.controller;
 
+import com.jocoweco.FoodSommelier.auth.dto.CheckNicknameRequestDTO;
+import com.jocoweco.FoodSommelier.auth.dto.GoogleIdTokenRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.RegisterSocialRequestDTO;
 import com.jocoweco.FoodSommelier.auth.dto.TokenResponseDTO;
 import com.jocoweco.FoodSommelier.auth.service.GoogleAuthService;
@@ -22,8 +24,8 @@ public class GoogleAuthController {
 
     /* 구글 로그인 */
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDTO> googleLogin(@RequestBody String googleIdToken) throws GeneralSecurityException {
-        TokenResponseDTO result = googleAuthService.googleLogin(googleIdToken);
+    public ResponseEntity<TokenResponseDTO> googleLogin(@RequestBody GoogleIdTokenRequestDTO request) throws GeneralSecurityException {
+        TokenResponseDTO result = googleAuthService.googleLogin(request);
         if (result == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -38,8 +40,8 @@ public class GoogleAuthController {
 
     /* 닉네임 확인 */
     @PostMapping("/register/check-nickname")
-    public ResponseEntity<Boolean> checkDuplicateNickname(@RequestBody String nickname) {
-        if (googleAuthService.isDuplicatedNickname(nickname)) {
+    public ResponseEntity<Boolean> checkDuplicateNickname(@RequestBody CheckNicknameRequestDTO request) {
+        if (googleAuthService.isDuplicatedNickname(request.getNickname())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(false); // 사용 불가능
         }
         return ResponseEntity.ok(true); // 사용 가능

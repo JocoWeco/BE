@@ -18,8 +18,4 @@ public class RegisterLocalRequestDTO {
     private String email;
     private Gender gender;
     private LocalDate birth;
-
-    private boolean enabledLoginId;
-    private boolean enabledNickname;
-    private boolean enabledEmail;
 }
