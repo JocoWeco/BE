@@ -5,3 +5,52 @@ spring:
 
   config:
     import: optional:.env[.properties]
+
+  datasource:
+    # mySql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_ID}
+    password: ${MYSQL_PASSWORD}
+
+  jpa:
+    database: mysql
+    show-sql: true
+
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_ID}
+            client-secret: ${GOOGLE_SECRET}
+            scope:
+              - email
+              - profile
+  mvc:
+    cors:
+      allowed-origins: http://localhost:3000,${ANDROID_DEVICE_IP}
+      allowed-methods: GET,POST,PUT,DELETE
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+
+google:
+  client:
+    client-id: ${Google_Client_Id}
+    client-secret:
+    access-token-uri:
+    user-authorization-uri:
