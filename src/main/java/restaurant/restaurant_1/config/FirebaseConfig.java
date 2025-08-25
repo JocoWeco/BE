@@ -14,12 +14,22 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
 
-   @Bean
-    public Firestore firestore() {
-       return FirestoreClient.getFirestore();
-   }
+    @Bean
+    public Firestore firestore() throws IOException {
+        InputStream serviceAccount = new ClassPathResource("serviceAccountKey.json").getInputStream();
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
+
+        if (FirebaseApp.getApps().isEmpty()) {
+            FirebaseApp.initializeApp(options);
+        }
+        return FirestoreClient.getFirestore();
+    }
 }
