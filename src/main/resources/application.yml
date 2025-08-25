@@ -5,3 +5,50 @@ spring:
 
   config:
     import: optional:.env[.properties]
+
+  datasource:
+    # mySql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_ID}
+    password: ${MYSQL_PASSWORD}
+
+  jpa:
+    database: mysql
+    show-sql: true
+
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  ai:
+    model: vertexai
+    vertex:
+      ai:
+        gemini:
+          project-id: foodsommelier-8c645
+          location: us-central1
+          credentials-uri: ${GCP_CREDENTIALS_LOCATION}
+          transport: rest
+          # Gemini chat
+          chat:
+            options:
+              model: gemini-2.5-flash
+              temperature: 0.7
+              response-mime-type: application/json
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+
+google:
+  client:
+    client-id: ${Google_Client_Id}

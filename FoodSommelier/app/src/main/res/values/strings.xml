@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">FoodSommelier</string>
+
+    <!-- Google Login -->
+    <string name="default_web_client_id">828272622985-l2ie6f3i580jfe12rkj4g7n4v45a2806.apps.googleusercontent.com</string>
+    <string name="test_web_client_id">828272622985–7iabvl4j5kdjjt1lq9paast91ag0t2eo.apps.googleusercontent.com</string>
+
+    <!-- Kakao SDK -->
+    <string name="kakao_native_app_key">128342b38fca12bf40de3139b32f73cf</string>
+
+    <!-- Order Option -->
+    <string-array name="spicy_levels">
+        <item>상관없음</item>
+        <item>순한(맑은)</item>
+        <item>보통</item>
+        <item>매운</item>
+        <item>아주 매운</item>
+    </string-array>
+
+    <!-- Setting -->
+    <string-array name="array_gender">
+        <item>남자</item>
+        <item>여자</item>
+    </string-array>
+</resources>
