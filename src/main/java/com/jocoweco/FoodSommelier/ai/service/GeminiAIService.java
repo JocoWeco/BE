@@ -1,6 +1,7 @@
 package com.jocoweco.FoodSommelier.ai.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jocoweco.FoodSommelier.ai.dto.OrderResponseDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class GeminiAIService {
     }
 
     public OrderResponseDTO getResponseMessage(String request) throws JsonProcessingException {
-        String instruction= """
+        String instruction = """
                 You are a local restaurant recommendation assistant.
                 Users send JSON requests with a message, optional preferences, and location.
                 
@@ -112,7 +113,13 @@ public class GeminiAIService {
         log.info(chatResponse.toString());
 
         String responseToString = chatResponse.getResult().getOutput().getText();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+        OrderResponseDTO orderResponse = objectMapper.readValue(responseToString, OrderResponseDTO.class);
+
+        log.info("restaurant1 menu1: {}", orderResponse.getRestaurant1().getMenu().getMenu1());
+        log.info("restaurant1 location latitude: {}", orderResponse.getRestaurant1().getLocation().getLatitude());
         return objectMapper.readValue(responseToString, OrderResponseDTO.class);
     }
 
