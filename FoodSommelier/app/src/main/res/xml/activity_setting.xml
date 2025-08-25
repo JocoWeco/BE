@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="계정 정보">
+        <EditTextPreference
+            android:defaultValue="user"
+            android:dialogTitle="닉네임"
+            android:key="username"
+            android:summary="닉네임을 입력하세요"
+            android:title="닉네임" />
+        <CheckBoxPreference
+            android:key="gender"
+            android:title="성별" />
+        <ListPreference
+            android:title="안녕"
+            app:entries="@array/array_gender"
+            app:entryValues="@array/array_gender" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="기본 설정">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="location"
+            android:summaryOff="위치 정보 수집에 동의하지 않습니다."
+            android:summaryOn="위치 정보 수집에 동의합니다"
+            android:title="위치 서비스" />
+    </PreferenceCategory>
+</PreferenceScreen>

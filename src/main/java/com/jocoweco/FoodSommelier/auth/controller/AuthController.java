@@ -2,15 +2,13 @@ package com.jocoweco.FoodSommelier.auth.controller;
 
 import com.jocoweco.FoodSommelier.auth.dto.*;
 import com.jocoweco.FoodSommelier.auth.service.AuthService;
+import com.jocoweco.FoodSommelier.user.dto.UserInfoDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,6 +61,11 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<TokenResponseDTO> reissue(@RequestBody TokenRequestDTO request) {
         return ResponseEntity.ok().body(authService.reissueToken(request));
+    }
+
+    /* 정보 조회 */
+    @PostMapping ResponseEntity<UserInfoDTO> getUserInfo(@RequestHeader("Authorization")String token) {
+       return ResponseEntity.ok().body(authService.getUserInfo(token));
     }
 
 }

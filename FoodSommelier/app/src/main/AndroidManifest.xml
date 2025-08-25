@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.jocoweco.foodsommelier">
+
+    <!-- 네트워크 권한 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 위치 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <application
+        android:name=".GlobalApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/ic_logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_logo"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+        android:usesCleartextTraffic="true">
+
+
+        <!-- 로그인 -->
+        <activity
+            android:name=".login.LoginActivity"
+            android:exported="true"
+            android:label="푸드 소믈리에"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".login.LoginLocalActivity"
+            android:exported="true">
+
+        </activity>
+        <activity
+            android:name=".login.RegisterLocalActivity"
+            android:exported="true"
+            android:label="Register Local">
+
+        </activity>
+        <activity
+            android:name=".login.RegisterSocialActivity"
+            android:exported="true"
+            android:label="Register Social">
+
+        </activity>
+
+        <!-- 메인 화면 -->
+        <activity android:name=".MainActivity"
+            android:exported="true">
+        </activity>
+
+        <!-- 주문서 -->
+
+
+    </application>
+
+</manifest>

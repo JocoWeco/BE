@@ -29,6 +29,22 @@ spring:
       host: localhost
       port: 6379
 
+  ai:
+    model: vertexai
+    vertex:
+      ai:
+        gemini:
+          project-id: foodsommelier-8c645
+          location: us-central1
+          credentials-uri: ${GCP_CREDENTIALS_LOCATION}
+          transport: rest
+          # Gemini chat
+          chat:
+            options:
+              model: gemini-2.5-flash
+              temperature: 0.7
+              response-mime-type: application/json
+
 jwt:
   secret:
     key: ${JWT_SECRET_KEY}

@@ -12,6 +12,7 @@ import com.jocoweco.FoodSommelier.security.jwt.JwtProvider;
 import com.jocoweco.FoodSommelier.security.userdetails.CustomUserDetails;
 import com.jocoweco.FoodSommelier.user.domain.LocalUser;
 import com.jocoweco.FoodSommelier.user.domain.User;
+import com.jocoweco.FoodSommelier.user.dto.UserInfoDTO;
 import com.jocoweco.FoodSommelier.user.repository.LocalUserRepository;
 import com.jocoweco.FoodSommelier.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,7 @@ public class AuthService {
     public boolean isDuplicatedNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
+
     // 동일 이메일 여부 확인
     public boolean isDuplicatedEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -115,7 +117,7 @@ public class AuthService {
         // Redis에 RefreshToken 저장되어 있는지 확인
         RefreshToken foundTokenInfo = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("RefreshToken Not Found"));
-       
+
         // 사용자 정보 확인
         User user = userRepository.findByUuid(foundTokenInfo.getUuid())
                 .orElseThrow(() -> new RuntimeException("UserId Not Found : " + foundTokenInfo.getUuid()));
@@ -133,6 +135,29 @@ public class AuthService {
 
         return newToken;
     }
+
+    /* 정보 조회 */
+    public UserInfoDTO getUserInfo(String accessToken) {
+
+        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid Authorization Header");
+        }
+        String token = accessToken.substring("Bearer ".length());
+
+        String uuid = jwtProvider.getUuid(token);
+        User user = userRepository.findByUuid(uuid)
+                .orElseThrow(() -> new UsernameNotFoundException("회원 정보를 찾을 수 없습니다."));
+
+        return UserInfoDTO.builder()
+                .birth(user.getBirth())
+                .nickname(user.getNickname())
+                .gender(user.getGender())
+                .email(user.getEmail())
+                .excludedIngredient(user.getExcludedIngredient())
+                .build();
+
+    }
+
 
     /* 로그아웃 */
     @Transactional
